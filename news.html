@@ -64,14 +64,15 @@
 <script>
 (function() {
     const GROUP_ID = -233748818;
-    // ЗАМЕНИТЕ ЭТОТ URL НА ВАШ URL ОТ GOOGLE APPS SCRIPT
-    const PROXY_URL = 'https://script.google.com/macros/s/AKfycbwe19Vzs9tLqHS-YapbdArshXKmlIXlr1w7XRM8yVkMvNK9KIS3wlMtmJk1EQDhwl3u/exec?owner_id=' + GROUP_ID + '&count=15';
+    // Используем публичный CORS-прокси, который добавляет нужные заголовки
+    const PROXY_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(`https://api.vk.com/method/wall.get?owner_id=${GROUP_ID}&count=15&filter=owner&v=5.199`);
     
     const container = document.getElementById('vkNewsContainer');
     const refreshBtn = document.getElementById('refreshBtn');
 
     async function getVKPosts() {
         const response = await fetch(PROXY_URL);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (data.error) throw new Error(data.error.error_msg);
         return data.response.items;
