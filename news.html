@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новости — Вершина</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #f0f0f0; line-height: 1.6; }
+        .animated-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden; }
+        .gradient-ball { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4; animation: float 20s infinite alternate; }
+        .ball-1 { width: 40vw; height: 40vw; background: #7c3aed; top: -10%; left: -10%; }
+        .ball-2 { width: 35vw; height: 35vw; background: #ff007f; bottom: -10%; right: -5%; animation-duration: 25s; }
+        .ball-3 { width: 25vw; height: 25vw; background: #00c6ff; top: 40%; left: 60%; animation-duration: 18s; }
+        @keyframes float { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(5%,5%) scale(1.1); } }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        .site-header { padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(10,10,15,0.8); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        .brand-link { text-decoration: none; }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-title { font-size: 1.7rem; font-weight: 800; letter-spacing: 2px; background: linear-gradient(135deg,#FFDE00,#FFA500); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .brand-subtitle { font-size: 0.7rem; opacity: 0.7; }
+        .site-nav { display: flex; gap: 28px; }
+        .nav-link { color: #ddd; text-decoration: none; font-weight: 500; transition: 0.2s; }
+        .nav-link:hover, .nav-active { color: #FFDE00; }
+        .profile-dropdown { position: relative; }
+        .profile-dropbtn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); padding: 8px 18px; border-radius: 40px; color: white; cursor: pointer; font-weight: 500; }
+        .profile-dropdown-content { display: none; position: absolute; right: 0; background: #1e1e2a; min-width: 180px; border-radius: 12px; border: 1px solid #333; z-index: 10; }
+        .profile-dropdown:hover .profile-dropdown-content { display: block; }
+        .profile-dropdown-content a { display: block; padding: 10px 16px; color: white; text-decoration: none; border-bottom: 1px solid #2a2a35; }
+        .profile-dropdown-content a:hover { background: #FFDE0022; color: #FFDE00; }
+        .hero { text-align: center; padding: 60px 0 40px; }
+        .hero-title { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg,#fff,#FFDE00); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .section { padding: 40px 0; }
+        .text-accent { color: #FFDE00; margin-bottom: 16px; }
+        .btn-primary { background: #FFDE00; color: #0a0a0f; padding: 10px 24px; border-radius: 40px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; margin-bottom: 20px; }
+        .btn-primary:hover { background: #ffc107; transform: scale(1.02); }
+        .news-grid { display: grid; gap: 25px; margin-top: 20px; }
+        .news-card { background: rgba(20,20,28,0.8); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); border-radius: 28px; padding: 25px; transition: transform 0.3s ease; }
+        .news-card:hover { transform: translateY(-5px); }
+        .news-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; gap: 10px; }
+        .news-date { color: #aaa; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .news-text { line-height: 1.6; margin-bottom: 15px; white-space: pre-wrap; }
+        .news-images { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        .news-images img { max-width: 200px; max-height: 150px; object-fit: cover; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); }
+        .vk-badge { background: #4A76A8; display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 10px; }
+        .site-badge { background: #FFDE00; color: #0a0a0f; display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 10px; }
+        .loading-spinner, .error-message { text-align: center; padding: 40px; }
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.2); border-top-color: #FFDE00; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .footer { text-align: center; padding: 40px 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 40px; }
+        @media (max-width: 768px) { .news-images img { max-width: 100%; height: auto; } }
+    </style>
+</head>
+<body>
+<div class="animated-bg"><div class="gradient-ball ball-1"></div><div class="gradient-ball ball-2"></div><div class="gradient-ball ball-3"></div></div>
+<header class="site-header"><div class="header-inner"><a href="index.html" class="brand-link"><div class="brand"><div class="brand-title">ВЕРШИНА</div><div class="brand-subtitle">СПОРТАРЕНА</div></div></a><nav class="site-nav"><a href="index.html" class="nav-link">Главная</a><a href="news.html" class="nav-link nav-active">Новости</a><a href="vk-panel.html" class="nav-link">Публикации</a><a href="admin.html" class="nav-link">Админ-панель</a></nav><div class="profile-dropdown"><button class="profile-dropbtn" id="adminProfileBtn"><span id="adminName">Администратор</span></button><div class="profile-dropdown-content"><a href="profile.html">👤 Профиль</a><a href="admin.html">⚙️ Админ-панель</a><a href="vk-panel.html">📱 Публикации</a><a href="#" id="logoutBtn">🚪 Выйти</a></div></div></div></header>
+<section class="hero"><div class="container"><h1 class="hero-title">НОВОСТИ КЛУБА</h1><p>Актуальные события из ВКонтакте и собственные новости</p></div></section>
+<section class="section"><div class="container"><div style="text-align: center; margin-bottom: 30px;"><button class="btn-primary" id="refreshAllBtn"><i class="fas fa-sync-alt"></i> Обновить все новости</button></div>
+<h2 class="text-accent"><i class="fab fa-vk"></i> Новости из нашей группы VK</h2><div id="vkNewsContainer" class="news-grid"><div class="loading-spinner"><div class="spinner"></div><p>Загрузка новостей ВК...</p></div></div>
+<h2 class="text-accent" style="margin-top: 50px;"><i class="fas fa-globe"></i> Новости клуба (с сайта)</h2><div id="siteNewsContainer" class="news-grid"><div class="loading-spinner"><div class="spinner"></div><p>Загрузка новостей сайта...</p></div></div></div></section>
+<footer class="footer"><div class="container"><p>© 2025 Вершина — Спортивный клуб. Все права защищены.</p></div></footer>
+
+<script>
+(function() {
+    const GROUP_ID = -233748818;
+    const API_V = '5.199';
+    const vkContainer = document.getElementById('vkNewsContainer');
+    const siteContainer = document.getElementById('siteNewsContainer');
+    const refreshBtn = document.getElementById('refreshAllBtn');
+    
+    // JSONP для получения постов VK
+    function getVKPostsJsonp(count = 15) {
+        return new Promise((resolve, reject) => {
+            const callbackName = 'vk_jsonp_news_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+            const script = document.createElement('script');
+            script.src = `https://api.vk.com/method/wall.get?owner_id=${GROUP_ID}&count=${count}&filter=owner&v=${API_V}&callback=${callbackName}`;
+            window[callbackName] = (data) => {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                if (data.error) reject(new Error(data.error.error_msg || 'Ошибка VK API'));
+                else resolve(data.response.items);
+            };
+            script.onerror = () => {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                reject(new Error('Не удалось загрузить новости VK'));
+            };
+            document.body.appendChild(script);
+        });
+    }
+    
+    function formatDate(ts) {
+        const date = new Date(ts * 1000);
+        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function formatText(text) {
+        if (!text) return '';
+        let formatted = escapeHtml(text).replace(/\n/g, '<br>');
+        formatted = formatted.replace(/#([А-Яа-яA-Za-z0-9_]+)/g, '<span style="color:#FFDE00;">#$1</span>');
+        formatted = formatted.replace(/(https?:\/\/[^\s<]+)/g, url => `<a href="${url}" target="_blank" style="color:#FFDE00;">${url}</a>`);
+        return formatted;
+    }
+    
+    function renderVKPosts(posts) {
+        if (!posts || posts.length === 0) { vkContainer.innerHTML = '<div class="error-message">Нет постов в группе VK</div>'; return; }
+        let html = '';
+        for (const post of posts) {
+            if (post.is_deleted) continue;
+            const dateStr = formatDate(post.date);
+            const text = formatText(post.text);
+            let imagesHtml = '';
+            if (post.attachments) {
+                const photos = post.attachments.filter(a => a.type === 'photo').map(a => a.photo.sizes.pop().url);
+                if (photos.length) {
+                    imagesHtml = '<div class="news-images">' + photos.slice(0,4).map(url => `<img src="${url}" loading="lazy" alt="Фото">`).join('') + '</div>';
+                }
+            }
+            html += `<div class="news-card"><div class="vk-badge"><i class="fab fa-vk"></i> ВКонтакте</div><div class="news-header"><div class="news-date"><i class="far fa-calendar-alt"></i> ${dateStr}</div><div><i class="fas fa-heart"></i> ${post.likes?.count || 0} &nbsp; <i class="fas fa-comment"></i> ${post.comments?.count || 0}</div></div><div class="news-text">${text}</div>${imagesHtml}<div style="margin-top:15px;"><a href="https://vk.com/wall-${Math.abs(GROUP_ID)}_${post.id}" target="_blank" style="color:#FFDE00; text-decoration:none;">Открыть в VK →</a></div></div>`;
+        }
+        vkContainer.innerHTML = html;
+    }
+    
+    async function loadVKNews() {
+        vkContainer.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Загрузка...</p></div>';
+        try {
+            const posts = await getVKPostsJsonp(15);
+            renderVKPosts(posts);
+            localStorage.setItem('vk_news_cache', JSON.stringify(posts));
+        } catch (err) {
+            console.error(err);
+            const cached = localStorage.getItem('vk_news_cache');
+            if (cached) {
+                renderVKPosts(JSON.parse(cached));
+                vkContainer.insertAdjacentHTML('afterbegin', '<div class="error-message" style="margin-bottom:20px;">⚠️ Не удалось обновить, показаны кешированные новости.</div>');
+            } else {
+                vkContainer.innerHTML = `<div class="error-message">❌ Ошибка загрузки VK: ${err.message}</div>`;
+            }
+        }
+    }
+    
+    function renderSiteNews() {
+        const siteNews = JSON.parse(localStorage.getItem('site_news_array') || '[]');
+        if (!siteNews.length) { siteContainer.innerHTML = '<div class="error-message">Пока нет новостей, добавленных через админ-панель.</div>'; return; }
+        siteNews.sort((a,b) => new Date(b.date) - new Date(a.date));
+        let html = '';
+        for (const news of siteNews) {
+            const dateStr = new Date(news.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const text = formatText(news.text);
+            let imagesHtml = '';
+            if (news.images && news.images.length) {
+                imagesHtml = '<div class="news-images">' + news.images.slice(0,4).map(img => `<img src="${img}" loading="lazy" alt="Фото">`).join('') + '</div>';
+            }
+            const sourceBadge = news.vk_id ? '<span class="vk-badge"><i class="fab fa-vk"></i> Опубликовано в VK</span>' : '<span class="site-badge"><i class="fas fa-globe"></i> Новость сайта</span>';
+            html += `<div class="news-card"><div>${sourceBadge}</div><div class="news-header"><div class="news-date"><i class="far fa-calendar-alt"></i> ${dateStr}</div></div><div class="news-text">${text}</div>${imagesHtml}</div>`;
+        }
+        siteContainer.innerHTML = html;
+    }
+    
+    function loadAllNews() { loadVKNews(); renderSiteNews(); }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAllNews();
+        if (refreshBtn) refreshBtn.addEventListener('click', loadAllNews);
+        const savedUser = localStorage.getItem('current_user');
+        const adminNameSpan = document.getElementById('adminName');
+        if (savedUser && adminNameSpan) {
+            try { const user = JSON.parse(savedUser); adminNameSpan.textContent = `${user.firstName} ${user.lastName}`; } catch(e) {}
+        }
+        const logout = document.getElementById('logoutBtn');
+        if (logout) logout.addEventListener('click', (e) => { e.preventDefault(); if(confirm('Выйти?')) { localStorage.removeItem('current_user'); localStorage.removeItem('admin_logged_in'); window.location.href = 'index.html'; } });
+        if (!localStorage.getItem('current_user')) {
+            localStorage.setItem('current_user', JSON.stringify({ firstName: 'Администратор', lastName: 'Вершины', isAdmin: true }));
+            localStorage.setItem('admin_logged_in', 'true');
+            if (adminNameSpan) adminNameSpan.textContent = 'Администратор Вершины';
+        }
+    });
+})();
+</script>
+</body>
+</html>
