@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вершина | Управление публикациями</title>
+    <title>Вершина | Управление публикациями ВК</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,25 +62,25 @@
 </head>
 <body>
 <div class="animated-bg"><div class="gradient-ball ball-1"></div><div class="gradient-ball ball-2"></div><div class="gradient-ball ball-3"></div></div>
-<header class="site-header"><div class="header-inner"><a href="#" class="brand-link"><div class="brand"><div class="brand-title">ВЕРШИНА</div><div class="brand-subtitle">СПОРТАРЕНА</div></div></a><nav class="site-nav"><a href="#" class="nav-link nav-active">Публикации</a><a href="news.html" class="nav-link">Новости</a></nav><div class="profile-dropdown"><button class="profile-dropbtn">Администратор ▼</button><div class="profile-dropdown-content"><a href="#" id="logoutBtn">Выйти</a></div></div></div></header>
-<section class="hero"><div class="container"><h1 class="hero-title">Управление публикациями</h1><p>Создавайте новости – они появятся на сайте и (если токен верный) в группе VK</p></div></section>
+<header class="site-header"><div class="header-inner"><a href="#" class="brand-link"><div class="brand"><div class="brand-title">ВЕРШИНА</div><div class="brand-subtitle">СПОРТАРЕНА</div></div></a><nav class="site-nav"><a href="#" class="nav-link nav-active">Публикации ВК</a><a href="news.html" class="nav-link">Новости сайта</a></nav><div class="profile-dropdown"><button class="profile-dropbtn">Администратор ▼</button><div class="profile-dropdown-content"><a href="#" id="logoutBtn">Выйти</a></div></div></div></header>
+<section class="hero"><div class="container"><h1 class="hero-title">Управление публикациями ВК + сайт</h1><p>Посты с фото публикуются в группу ВКонтакте (работает с GitHub Pages)</p></div></section>
 <div class="container">
     <div class="card">
         <h2 class="text-accent">📝 Создать новую публикацию</h2>
         <textarea id="postText" rows="5" placeholder="Текст поста ... (можно использовать #хэштеги, ссылки)"></textarea>
         <div class="attachment-upload" id="uploadArea">📎 Нажмите или перетащите фото (до 5 шт., JPG/PNG)<input type="file" id="photoInput" multiple accept="image/jpeg,image/png" style="display: none;"></div>
         <div id="previewImages" class="attachments-preview"></div>
-        <div class="publish-options"><div class="option-btn active" data-opt="site">🌐 Только на сайт</div><div class="option-btn" data-opt="both">🔄 ВК + Сайт</div><div class="option-btn" data-opt="vk">📱 Только ВКонтакте</div></div>
+        <div class="publish-options"><div class="option-btn active" data-opt="both">🔄 ВК + Сайт</div><div class="option-btn" data-opt="vk">📱 Только ВКонтакте</div><div class="option-btn" data-opt="site">🌐 Только на сайт</div></div>
         <div class="flex-btns"><button class="btn-primary" id="publishBtn">📤 Опубликовать</button><button class="btn-secondary" id="previewBtn">👁️ Предпросмотр</button></div>
     </div>
-    <div class="card"><h2 class="text-accent">📰 Последние новости из VK</h2><div id="vkPostsContainer" class="posts-grid"><div class="loading">⏳ Загрузка...</div></div><button class="btn-secondary" id="refreshPostsBtn" style="margin-top:15px;">🔄 Обновить</button></div>
+    <div class="card"><h2 class="text-accent">📰 Последние новости из VK группы</h2><div id="vkPostsContainer" class="posts-grid"><div class="loading">⏳ Загрузка постов ВКонтакте...</div></div><button class="btn-secondary" id="refreshPostsBtn" style="margin-top:15px;">🔄 Обновить</button></div>
 </div>
 <div id="statusBar" class="sync-status-bar"><div id="statusMsg"></div></div>
-<footer class="footer"><p>© 2025 Вершина — Спортивный клуб</p></footer>
+<footer class="footer"><p>© 2025 Вершина — полная синхронизация с ВКонтакте</p></footer>
 
 <script>
 (function(){
-    // ---------- КОНФИГУРАЦИЯ VK (замените на свои данные при необходимости) ----------
+    // ---------- КОНФИГУРАЦИЯ (ЗАМЕНИТЕ ТОКЕН, ЕСЛИ НУЖНО) ----------
     const ACCESS_TOKEN = 'vk1.a.yNOhH5A0eojkscbxHHdDKgRGQHnWFqpahwwylTPBs0O4OlVaAEwrJH-msPvmcUGZybg5nyjIX0N0l8b6hcGdT0g4zybTWZydFO6__JYIKhbYNqSBJuIRNnajtXamywF23obWWBvzTPdv3Pa4h4n8gIIz4CCK-F-s8WFqh0eNI4hx6wj901aN3iY-FKYEIuZAI3mZ0C2ze7PlWcALLkY20A';
     const GROUP_ID = -233748818;
     const API_V = '5.199';
@@ -95,7 +95,7 @@
     const vkContainer = document.getElementById('vkPostsContainer');
     
     let selectedFiles = [];
-    let publishOption = 'site';
+    let publishOption = 'both';
     
     function showStatus(msg, isError = false) {
         const bar = document.getElementById('statusBar');
@@ -172,69 +172,7 @@
         });
     });
     
-    // ---------- JSONP для получения постов VK ----------
-    function getVKPostsJsonp(count = 10) {
-        return new Promise((resolve, reject) => {
-            const callbackName = 'vk_jsonp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-            const script = document.createElement('script');
-            script.src = `https://api.vk.com/method/wall.get?owner_id=${GROUP_ID}&count=${count}&filter=owner&v=${API_V}&callback=${callbackName}`;
-            window[callbackName] = (data) => {
-                delete window[callbackName];
-                document.body.removeChild(script);
-                if (data.error) reject(new Error(data.error.error_msg || 'Ошибка VK API'));
-                else resolve(data.response.items);
-            };
-            script.onerror = () => {
-                delete window[callbackName];
-                document.body.removeChild(script);
-                reject(new Error('Не удалось загрузить новости VK'));
-            };
-            document.body.appendChild(script);
-        });
-    }
-    
-    async function renderVKPosts() {
-        vkContainer.innerHTML = '<div class="loading">⏳ Загрузка...</div>';
-        try {
-            const posts = await getVKPostsJsonp(10);
-            if(!posts.length) { vkContainer.innerHTML = '<p>Нет постов в группе.</p>'; return; }
-            let html = '';
-            for(let p of posts) {
-                const date = new Date(p.date * 1000).toLocaleString('ru');
-                let text = p.text || '';
-                text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:#FFDE00;">$1</a>');
-                let imagesHtml = '';
-                if(p.attachments) {
-                    const photos = p.attachments.filter(a => a.type === 'photo').map(a => a.photo.sizes.pop().url);
-                    if(photos.length) {
-                        imagesHtml = '<div style="display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;">';
-                        photos.slice(0,3).forEach(url => { imagesHtml += `<img src="${url}" style="max-width:120px; max-height:120px; border-radius:12px;">`; });
-                        imagesHtml += '</div>';
-                    }
-                }
-                html += `<div class="vk-post-item"><div class="post-date">📅 ${date}</div><div class="post-text">${text}</div>${imagesHtml}<div class="post-stats"><span>❤️ ${p.likes?.count || 0}</span><span>💬 ${p.comments?.count || 0}</span><span>🔁 ${p.reposts?.count || 0}</span></div></div>`;
-            }
-            vkContainer.innerHTML = html;
-            localStorage.setItem('vk_news_backup', JSON.stringify(posts));
-        } catch(e) {
-            console.error(e);
-            vkContainer.innerHTML = `<p style="color:#ff8888;">Ошибка загрузки: ${e.message}</p>`;
-            const cached = localStorage.getItem('vk_news_backup');
-            if(cached) vkContainer.innerHTML += '<p>Показаны кешированные новости.</p>';
-        }
-    }
-    
-    // ---------- Сохранение новости на сайте ----------
-    function saveToSiteNews(text, imagesBase64 = [], vkId = null) {
-        const siteNews = JSON.parse(localStorage.getItem('site_news_array') || '[]');
-        const newPost = { id: Date.now(), text: text, date: new Date().toISOString(), images: imagesBase64, source: 'admin', vk_id: vkId };
-        siteNews.unshift(newPost);
-        if(siteNews.length > 50) siteNews.pop();
-        localStorage.setItem('site_news_array', JSON.stringify(siteNews));
-        return newPost.id;
-    }
-    
-    // ---------- Публикация в VK (JSONP) ----------
+    // ---------- JSONP вызов VK API (работает для любых методов, включая wall.post) ----------
     function callVkApiJsonp(method, params) {
         return new Promise((resolve, reject) => {
             const callbackName = 'vk_jsonp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
@@ -261,6 +199,7 @@
         });
     }
     
+    // Загрузка фото через upload_url (поддерживает CORS)
     async function uploadPhotosToVk(files) {
         if (!files.length) return [];
         const uploadServer = await callVkApiJsonp('photos.getWallUploadServer', { group_id: Math.abs(GROUP_ID) });
@@ -295,26 +234,73 @@
         return response.post_id;
     }
     
-    // ---------- Основная публикация ----------
+    // Получение постов VK (тоже JSONP)
+    async function getVKPosts(count = 15) {
+        const items = await callVkApiJsonp('wall.get', { owner_id: GROUP_ID, count: count, filter: 'owner' });
+        return items.items;
+    }
+    
+    async function renderVKPosts() {
+        vkContainer.innerHTML = '<div class="loading">⏳ Загрузка...</div>';
+        try {
+            const posts = await getVKPosts(10);
+            if(!posts.length) { vkContainer.innerHTML = '<p>Нет постов в группе.</p>'; return; }
+            let html = '';
+            for(let p of posts) {
+                const date = new Date(p.date * 1000).toLocaleString('ru');
+                let text = p.text || '';
+                text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:#FFDE00;">$1</a>');
+                let imagesHtml = '';
+                if(p.attachments) {
+                    const photos = p.attachments.filter(a => a.type === 'photo').map(a => a.photo.sizes.pop().url);
+                    if(photos.length) {
+                        imagesHtml = '<div style="display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;">';
+                        photos.slice(0,3).forEach(url => { imagesHtml += `<img src="${url}" style="max-width:120px; max-height:120px; border-radius:12px;">`; });
+                        imagesHtml += '</div>';
+                    }
+                }
+                html += `<div class="vk-post-item"><div class="post-date">📅 ${date}</div><div class="post-text">${text}</div>${imagesHtml}<div class="post-stats"><span>❤️ ${p.likes?.count || 0}</span><span>💬 ${p.comments?.count || 0}</span><span>🔁 ${p.reposts?.count || 0}</span></div></div>`;
+            }
+            vkContainer.innerHTML = html;
+            localStorage.setItem('vk_news_backup', JSON.stringify(posts));
+        } catch(e) {
+            console.error(e);
+            vkContainer.innerHTML = `<p style="color:#ff8888;">Ошибка загрузки: ${e.message}</p>`;
+            const cached = localStorage.getItem('vk_news_backup');
+            if(cached) vkContainer.innerHTML += '<p>Показаны кешированные новости.</p>';
+        }
+    }
+    
+    function saveToSiteNews(text, imagesBase64 = [], vkId = null) {
+        const siteNews = JSON.parse(localStorage.getItem('site_news_array') || '[]');
+        const newPost = { id: Date.now(), text: text, date: new Date().toISOString(), images: imagesBase64, source: 'admin', vk_id: vkId };
+        siteNews.unshift(newPost);
+        if(siteNews.length > 50) siteNews.pop();
+        localStorage.setItem('site_news_array', JSON.stringify(siteNews));
+        return newPost.id;
+    }
+    
     async function publishNewPost() {
         const text = postTextArea.value.trim();
         if(!text && selectedFiles.length === 0) {
             showStatus('❌ Напишите текст или добавьте фото', true);
             return;
         }
+        let attachments = [];
         let vkPostId = null;
         let vkError = null;
         
         if(publishOption === 'both' || publishOption === 'vk') {
             try {
-                showStatus('⏳ Публикация в VK...');
-                const attachments = await uploadPhotosToVk(selectedFiles);
+                showStatus('⏳ Загрузка фото в ВК...');
+                attachments = await uploadPhotosToVk(selectedFiles);
+                showStatus('⏳ Публикация поста в VK...');
                 vkPostId = await publishToVK(text, attachments);
                 showStatus(`✅ Пост опубликован в VK! ID: ${vkPostId}`);
             } catch(e) {
                 console.error(e);
                 vkError = e.message;
-                showStatus(`⚠️ VK: ${vkError}`, true);
+                showStatus(`❌ Ошибка VK: ${vkError}`, true);
                 if(publishOption === 'vk') return;
             }
         }
@@ -329,10 +315,12 @@
             showStatus(publishOption === 'site' ? '✅ Новость сохранена на сайте' : '✅ Новость сохранена на сайте' + (vkPostId ? ' и в VK' : ' (VK не опубликовано)'));
         }
         
-        postTextArea.value = '';
-        selectedFiles = [];
-        updatePreview();
-        renderVKPosts();
+        if(publishOption !== 'schedule') {
+            postTextArea.value = '';
+            selectedFiles = [];
+            updatePreview();
+        }
+        setTimeout(() => renderVKPosts(), 2000);
     }
     
     function previewPost() {
