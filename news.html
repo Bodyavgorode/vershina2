@@ -65,16 +65,18 @@
 (function() {
     const GROUP_ID = -233748818;
     const API_V = '5.199';
+    // Ваш существующий токен сообщества (подходит для чтения стены)
+    const ACCESS_TOKEN = 'vk1.a.yNOhH5A0eojkscbxHHdDKgRGQHnWFqpahwwylTPBs0O4OlVaAEwrJH-msPvmcUGZybg5nyjIX0N0l8b6hcGdT0g4zybTWZydFO6__JYIKhbYNqSBJuIRNnajtXamywF23obWWBvzTPdv3Pa4h4n8gIIz4CCK-F-s8WFqh0eNI4hx6wj901aN3iY-FKYEIuZAI3mZ0C2ze7PlWcALLkY20A';
+    
     const container = document.getElementById('vkNewsContainer');
     const refreshBtn = document.getElementById('refreshBtn');
 
-    // JSONP запрос без токена – работает для публичных групп
+    // JSONP запрос с токеном
     function getVKPostsJsonp() {
         return new Promise((resolve, reject) => {
             const callbackName = 'vk_jsonp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
             const script = document.createElement('script');
-            // Добавляем пустой access_token (иногда требуется, даже для публичных)
-            const url = `https://api.vk.com/method/wall.get?owner_id=${GROUP_ID}&count=15&filter=owner&v=${API_V}&access_token=&callback=${callbackName}`;
+            const url = `https://api.vk.com/method/wall.get?owner_id=${GROUP_ID}&count=15&filter=owner&v=${API_V}&access_token=${ACCESS_TOKEN}&callback=${callbackName}`;
             script.src = url;
             window[callbackName] = (data) => {
                 delete window[callbackName];
@@ -85,7 +87,7 @@
             script.onerror = () => {
                 delete window[callbackName];
                 document.body.removeChild(script);
-                reject(new Error('Сеть или CORS проблема. Попробуйте обновить.'));
+                reject(new Error('Ошибка сети или JSONP'));
             };
             document.body.appendChild(script);
         });
