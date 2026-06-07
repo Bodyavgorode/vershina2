@@ -45,7 +45,7 @@
         .news-text { line-height: 1.6; margin-bottom: 15px; white-space: pre-wrap; }
         .news-images { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
         .news-images img { max-width: 200px; max-height: 150px; object-fit: cover; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); }
-        .vk-badge { background: #4A76A8; display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 10px; }
+        .site-badge { background: #FFDE00; color: #0a0a0f; display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 10px; }
         .loading-spinner, .error-message { text-align: center; padding: 40px; }
         .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.2); border-top-color: #FFDE00; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -56,47 +56,15 @@
 <body>
 <div class="animated-bg"><div class="gradient-ball ball-1"></div><div class="gradient-ball ball-2"></div><div class="gradient-ball ball-3"></div></div>
 <header class="site-header"><div class="header-inner"><a href="index.html" class="brand-link"><div class="brand"><div class="brand-title">ВЕРШИНА</div><div class="brand-subtitle">СПОРТАРЕНА</div></div></a><nav class="site-nav"><a href="index.html" class="nav-link">Главная</a><a href="news.html" class="nav-link nav-active">Новости</a><a href="vk-panel.html" class="nav-link">Публикации ВК</a><a href="admin.html" class="nav-link">Админ-панель</a></nav><div class="profile-dropdown"><button class="profile-dropbtn" id="adminProfileBtn"><span id="adminName">Администратор</span></button><div class="profile-dropdown-content"><a href="profile.html">👤 Профиль</a><a href="admin.html">⚙️ Админ-панель</a><a href="vk-panel.html">📱 Публикации Вконтакте</a><a href="#" id="logoutBtn">🚪 Выйти</a></div></div></div></header>
-<section class="hero"><div class="container"><h1 class="hero-title">НОВОСТИ КЛУБА</h1><p>Актуальные события из ВКонтакте</p></div></section>
+<section class="hero"><div class="container"><h1 class="hero-title">НОВОСТИ КЛУБА</h1><p>Актуальные новости, созданные администратором</p></div></section>
 <section class="section"><div class="container"><div style="text-align: center; margin-bottom: 30px;"><button class="btn-primary" id="refreshBtn"><i class="fas fa-sync-alt"></i> Обновить новости</button></div>
-<h2 class="text-accent"><i class="fab fa-vk"></i> Новости из нашей группы VK</h2><div id="vkNewsContainer" class="news-grid"><div class="loading-spinner"><div class="spinner"></div><p>Загрузка новостей ВК...</p></div></div></div></section>
+<h2 class="text-accent"><i class="fas fa-globe"></i> Новости клуба (с сайта)</h2><div id="siteNewsContainer" class="news-grid"><div class="loading-spinner"><div class="spinner"></div><p>Загрузка новостей...</p></div></div></div></section>
 <footer class="footer"><div class="container"><p>© 2025 Вершина — Спортивный клуб. Все права защищены.</p></div></footer>
 
 <script>
 (function() {
-    const GROUP_ID = -233748818;
-    const API_V = '5.199';
-    // Ваш существующий токен сообщества (подходит для чтения стены)
-    const ACCESS_TOKEN = 'vk1.a.yNOhH5A0eojkscbxHHdDKgRGQHnWFqpahwwylTPBs0O4OlVaAEwrJH-msPvmcUGZybg5nyjIX0N0l8b6hcGdT0g4zybTWZydFO6__JYIKhbYNqSBJuIRNnajtXamywF23obWWBvzTPdv3Pa4h4n8gIIz4CCK-F-s8WFqh0eNI4hx6wj901aN3iY-FKYEIuZAI3mZ0C2ze7PlWcALLkY20A';
-    
-    const container = document.getElementById('vkNewsContainer');
+    const container = document.getElementById('siteNewsContainer');
     const refreshBtn = document.getElementById('refreshBtn');
-
-    // JSONP запрос с токеном
-    function getVKPostsJsonp() {
-        return new Promise((resolve, reject) => {
-            const callbackName = 'vk_jsonp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-            const script = document.createElement('script');
-            const url = `https://api.vk.com/method/wall.get?owner_id=${GROUP_ID}&count=15&filter=owner&v=${API_V}&access_token=${ACCESS_TOKEN}&callback=${callbackName}`;
-            script.src = url;
-            window[callbackName] = (data) => {
-                delete window[callbackName];
-                document.body.removeChild(script);
-                if (data.error) reject(new Error(data.error.error_msg));
-                else resolve(data.response.items);
-            };
-            script.onerror = () => {
-                delete window[callbackName];
-                document.body.removeChild(script);
-                reject(new Error('Ошибка сети или JSONP'));
-            };
-            document.body.appendChild(script);
-        });
-    }
-
-    function formatDate(ts) {
-        const date = new Date(ts * 1000);
-        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    }
 
     function escapeHtml(str) {
         if (!str) return '';
@@ -116,63 +84,44 @@
         return formatted;
     }
 
-    function renderPosts(posts) {
-        if (!posts || posts.length === 0) {
-            container.innerHTML = '<div class="error-message">Нет постов в группе VK</div>';
+    function renderSiteNews() {
+        const siteNews = JSON.parse(localStorage.getItem('site_news_array') || '[]');
+        if (!siteNews.length) {
+            container.innerHTML = '<div class="error-message">Пока нет новостей. Добавьте их через панель управления.</div>';
             return;
         }
+        siteNews.sort((a,b) => new Date(b.date) - new Date(a.date));
         let html = '';
-        for (const post of posts) {
-            if (post.is_deleted) continue;
-            const dateStr = formatDate(post.date);
-            const text = formatText(post.text);
+        for (const news of siteNews) {
+            const dateStr = new Date(news.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const text = formatText(news.text);
             let imagesHtml = '';
-            if (post.attachments) {
-                const photos = post.attachments.filter(a => a.type === 'photo').map(a => a.photo.sizes.pop().url);
-                if (photos.length) {
-                    imagesHtml = '<div class="news-images">' + photos.slice(0,4).map(url => `<img src="${url}" loading="lazy" alt="Фото">`).join('') + '</div>';
-                }
+            if (news.images && news.images.length) {
+                imagesHtml = '<div class="news-images">' + news.images.slice(0,4).map(img => `<img src="${img}" loading="lazy" alt="Фото">`).join('') + '</div>';
             }
             html += `
                 <div class="news-card">
-                    <div class="vk-badge"><i class="fab fa-vk"></i> ВКонтакте</div>
+                    <div class="site-badge"><i class="fas fa-globe"></i> Новость сайта</div>
                     <div class="news-header">
                         <div class="news-date"><i class="far fa-calendar-alt"></i> ${dateStr}</div>
-                        <div><i class="fas fa-heart"></i> ${post.likes?.count || 0} &nbsp; <i class="fas fa-comment"></i> ${post.comments?.count || 0}</div>
                     </div>
                     <div class="news-text">${text}</div>
                     ${imagesHtml}
-                    <div style="margin-top:15px;">
-                        <a href="https://vk.com/wall-${Math.abs(GROUP_ID)}_${post.id}" target="_blank" style="color:#FFDE00; text-decoration:none;">Открыть в VK →</a>
-                    </div>
                 </div>
             `;
         }
         container.innerHTML = html;
     }
 
-    async function loadNews() {
+    function loadNews() {
         container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Загрузка...</p></div>';
-        try {
-            const posts = await getVKPostsJsonp();
-            renderPosts(posts);
-            localStorage.setItem('vk_news_cache', JSON.stringify(posts));
-        } catch (err) {
-            console.error(err);
-            const cached = localStorage.getItem('vk_news_cache');
-            if (cached) {
-                renderPosts(JSON.parse(cached));
-                container.insertAdjacentHTML('afterbegin', '<div class="error-message" style="margin-bottom:20px;">⚠️ Не удалось обновить, показаны кешированные новости.</div>');
-            } else {
-                container.innerHTML = `<div class="error-message">❌ Ошибка загрузки VK: ${err.message}</div>`;
-            }
-        }
+        renderSiteNews();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         loadNews();
         if (refreshBtn) refreshBtn.addEventListener('click', loadNews);
-        // Админская часть
+        // Админская часть (для отображения имени)
         const savedUser = localStorage.getItem('current_user');
         const adminNameSpan = document.getElementById('adminName');
         if (savedUser && adminNameSpan) {
