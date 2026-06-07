@@ -64,9 +64,9 @@
 <script>
 (function() {
     const GROUP_ID = -233748818;
-    // Используем публичный CORS-прокси, который добавляет правильные заголовки
+    // Используем публичный CORS-прокси corsproxy.io (не требует активации)
     const VK_URL = `https://api.vk.com/method/wall.get?owner_id=${GROUP_ID}&count=15&filter=owner&v=5.199`;
-    const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(VK_URL)}`;
+    const PROXY_URL = `https://corsproxy.io/?${encodeURIComponent(VK_URL)}`;
     
     const container = document.getElementById('vkNewsContainer');
     const refreshBtn = document.getElementById('refreshBtn');
