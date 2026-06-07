@@ -64,19 +64,31 @@
 <script>
 (function() {
     const GROUP_ID = -233748818;
-    // Используем публичный CORS-прокси corsproxy.io (не требует активации)
-    const VK_URL = `https://api.vk.com/method/wall.get?owner_id=${GROUP_ID}&count=15&filter=owner&v=5.199`;
-    const PROXY_URL = `https://corsproxy.io/?${encodeURIComponent(VK_URL)}`;
-    
+    const API_V = '5.199';
     const container = document.getElementById('vkNewsContainer');
     const refreshBtn = document.getElementById('refreshBtn');
 
-    async function getVKPosts() {
-        const response = await fetch(PROXY_URL);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        if (data.error) throw new Error(data.error.error_msg);
-        return data.response.items;
+    // JSONP запрос без токена – работает для публичных групп
+    function getVKPostsJsonp() {
+        return new Promise((resolve, reject) => {
+            const callbackName = 'vk_jsonp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+            const script = document.createElement('script');
+            // Добавляем пустой access_token (иногда требуется, даже для публичных)
+            const url = `https://api.vk.com/method/wall.get?owner_id=${GROUP_ID}&count=15&filter=owner&v=${API_V}&access_token=&callback=${callbackName}`;
+            script.src = url;
+            window[callbackName] = (data) => {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                if (data.error) reject(new Error(data.error.error_msg));
+                else resolve(data.response.items);
+            };
+            script.onerror = () => {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                reject(new Error('Сеть или CORS проблема. Попробуйте обновить.'));
+            };
+            document.body.appendChild(script);
+        });
     }
 
     function formatDate(ts) {
@@ -140,7 +152,7 @@
     async function loadNews() {
         container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Загрузка...</p></div>';
         try {
-            const posts = await getVKPosts();
+            const posts = await getVKPostsJsonp();
             renderPosts(posts);
             localStorage.setItem('vk_news_cache', JSON.stringify(posts));
         } catch (err) {
